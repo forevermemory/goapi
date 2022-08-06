@@ -1,0 +1,139 @@
+package service
+
+import (
+	"commonapi/service/db"
+	"strconv"
+
+	"github.com/gin-gonic/gin"
+)
+
+// Response code 0 成功 code -1 失败
+type Response struct {
+	Code int         `json:"code"`
+	Data interface{} `json:"data"`
+}
+
+var (
+	ErrParamNotFull int = 10000 // 参数不完整
+)
+
+var (
+	ERROR = &Response{Code: -1}
+	OK    = &Response{Code: 0}
+)
+
+func (r *Response) clone() *Response {
+	n := new(Response)
+	n.Code = r.Code
+	n.Data = r.Data
+	return n
+}
+
+func (r *Response) WithData(data interface{}) *Response {
+	n := r.clone()
+	n.Data = data
+	return n
+}
+
+func (r *Response) WithCode(code int) *Response {
+	n := r.clone()
+	n.Code = code
+	return n
+}
+
+////////// Record
+////////// Record
+////////// Record
+
+func GetRecordByID(c *gin.Context) interface{} {
+	id := c.Param("id")
+	if id == "" {
+		return ERROR.WithCode(ErrParamNotFull).WithData("参数不完整")
+	}
+	intv, err := strconv.Atoi(id)
+	if err != nil {
+		return ERROR
+	}
+
+	t := db.Record{}
+	data, err := t.GetItemByID(intv)
+	if err != nil {
+		return ERROR.WithData(err)
+	}
+
+	return OK.WithData(data)
+}
+
+func ListRecord(c *gin.Context) interface{} {
+	var querys = c.Request.URL.Query()
+	cond := db.ParseQuerys(querys)
+
+	t := db.Record{}
+	datas, err := t.List(cond)
+	if err != nil {
+		return ERROR.WithData(err)
+	}
+
+	return OK.WithData(datas)
+}
+
+func AddRecord(c *gin.Context) interface{} {
+	var req = db.Record{}
+	err := c.ShouldBind(&req)
+	if err != nil {
+		return ERROR.WithData(err)
+	}
+
+	t := db.Record{}
+	user, err := t.Add(&req)
+	if err != nil {
+		return ERROR.WithData(err)
+	}
+
+	return OK.WithData(user)
+}
+
+func UpdateRecord(c *gin.Context) interface{} {
+	id := c.Param("id")
+	if id == "" {
+		return ERROR.WithCode(ErrParamNotFull).WithData("参数不完整")
+	}
+	intv, err := strconv.Atoi(id)
+	if err != nil {
+		return ERROR.WithData(err)
+	}
+
+	var req = db.Record{}
+	err = c.ShouldBind(&req)
+	if err != nil {
+		return ERROR.WithData(err)
+	}
+	req.ID = intv
+
+	t := db.Record{}
+	user, err := t.Update(&req)
+	if err != nil {
+		return ERROR.WithData(err)
+	}
+
+	return OK.WithData(user)
+}
+
+func DeleteRecord(c *gin.Context) interface{} {
+	id := c.Param("id")
+	if id == "" {
+		return ERROR.WithCode(ErrParamNotFull).WithData("参数不完整")
+	}
+	intv, err := strconv.Atoi(id)
+	if err != nil {
+		return ERROR.WithData(err)
+	}
+
+	t := db.Record{}
+	err = t.Delete(intv)
+	if err != nil {
+		return ERROR.WithData(err)
+	}
+
+	return OK
+}

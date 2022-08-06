@@ -1,0 +1,10 @@
+mysql_config:
+    user: root
+    password: "123456"
+    host: localhost
+    port: 3306
+    database: taobao
+sqlite3_config:
+    file_path: ""
+http_config:
+    port: 80
