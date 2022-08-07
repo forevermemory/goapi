@@ -69,6 +69,22 @@ func GetApiConfigs(project string) ([]*ApiConfig, error) {
 		if err = json.Unmarshal(b, &cfg); err != nil {
 			return nil, err
 		}
+
+		// controller.go的packages
+		pkg1 := GetGoFilePackages(path.Join(project, "api", dir.Name(), "controller.go"))
+		for k := range InternelControllerPackages {
+			pkg1[k] = 1
+		}
+		// model.go的packages
+		pkg2 := GetGoFilePackages(path.Join(project, "api", dir.Name(), "model.go"))
+		for k := range InternelModelPackages {
+			pkg2[k] = 1
+		}
+
+		cfg.ControllerPackages = pkg1
+		cfg.ModelPackages = pkg2
+		cfg.StructName = ToGoUpper(cfg.ModelName)
+
 		apis = append(apis, &cfg)
 	}
 

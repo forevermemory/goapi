@@ -8,21 +8,7 @@ import (
 	"path"
 )
 
-var modelTemplate string = `
-// {{ .ModelName }} {{ .ModelName }}
-type {{ .ModelName }} struct {
-	ID int json:"id" form:"id" gorm:"column:id;primary_key;auto_increment;"
-
-	{{ range  $value := .datas }}{{ $value.field }}	{{ $value.kind }} json:"{{ $value.json }}" form:"{{ $value.json }}" gorm:"column:{{ $value.json }};comment:'{{ $value.comment }}'"
-	{{end}}
-
-	CreateTime  time.Time json:"-" form:"-" gorm:"column:create_time"
-	UpdateTime  time.Time json:"-" form:"-" gorm:"column:update_time"
-	UpdateTime  time.Time json:"-" form:"-" gorm:"column:update_time"
-}`
-
 const (
-	// 处理函数
 	List_Model_Template string = `
 	
 func (*{{ .StructName }}) List(cond *config.Condition, tx ...*gorm.DB) ([]*{{ .StructName }}, error) {
@@ -156,14 +142,14 @@ func (*{{ .StructName }}) Delete(id int, tx ...*gorm.DB) error {
 
 	// 生命周期
 	TableName_Model_Template    string = `func (o *{{ .StructName }}) TableName() string {return "{{ .ModelName }}"}\n`
-	BeforeCreate_Model_Template string = `func (o *{{ .StructName }}) BeforeCreate(tx *gorm.DB) error   { return nil }`
-	AfterCreate_Model_Template  string = `func (o *{{ .StructName }}) AfterCreate(tx *gorm.DB) error   { return nil }`
-	AfterSave_Model_Template    string = `func (o *{{ .StructName }}) AfterSave(tx *gorm.DB) error   { return nil }`
+	BeforeCreate_Model_Template string = `func (o *{{ .StructName }}) BeforeCreate(tx *gorm.DB) error { return nil }`
+	AfterCreate_Model_Template  string = `func (o *{{ .StructName }}) AfterCreate(tx *gorm.DB) error { return nil }`
+	AfterSave_Model_Template    string = `func (o *{{ .StructName }}) AfterSave(tx *gorm.DB) error { return nil }`
 
-	BeforeUpdate_Model_Template string = `func (o *{{ .StructName }}) BeforeUpdate(tx *gorm.DB) error   { return nil }`
-	AfterUpdate_Model_Template  string = `func (o *{{ .StructName }}) AfterUpdate(tx *gorm.DB) error   { return nil }`
-	BeforeDelete_Model_Template string = `func (o *{{ .StructName }}) BeforeDelete(tx *gorm.DB) error   { return nil }`
-	AfterDelete_Model_Template  string = `func (o *{{ .StructName }}) AfterDelete(tx *gorm.DB) error   { return nil }`
+	BeforeUpdate_Model_Template string = `func (o *{{ .StructName }}) BeforeUpdate(tx *gorm.DB) error { return nil }`
+	AfterUpdate_Model_Template  string = `func (o *{{ .StructName }}) AfterUpdate(tx *gorm.DB) error { return nil }`
+	BeforeDelete_Model_Template string = `func (o *{{ .StructName }}) BeforeDelete(tx *gorm.DB) error { return nil }`
+	AfterDelete_Model_Template  string = `func (o *{{ .StructName }}) AfterDelete(tx *gorm.DB) error { return nil }`
 
 	AfterFind_Model_Template string = `func (o *{{ .StructName }}) AfterFind(tx *gorm.DB) error   { return nil }`
 )
@@ -200,9 +186,9 @@ func GetModelGoString(param *ControllerAndModelHandleTemplate) string {
 
 	// 包
 	buf.WriteString("import (\n")
-	for _, v := range param.Packages {
+	for k := range param.Packages {
 		buf.WriteString("\t")
-		buf.WriteString(v)
+		buf.WriteString(k)
 		buf.WriteString("\n")
 	}
 
@@ -256,8 +242,8 @@ func ReplaceCurrentModelStruct(api *ApiConfig, structString string) {
 	// 获取到struct的索引开始和结束位置
 	pos := GetStructPositionFromString(oldStr, ToGoUpper(api.ModelName))
 
-	// 替换import的包
-	// pos2 := GetImportPositionFromString(oldStr)
+	// 更新import的包
+	// pos2 := GetImportPositionFromString(oldStr) TODO
 
 	newString := oldStr[0:pos[0]] + structString + oldStr[pos[1]:]
 

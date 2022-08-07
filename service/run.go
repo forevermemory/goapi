@@ -1,8 +1,8 @@
 package service
 
 import (
-	"commonapi/utils"
 	"errors"
+	"goapi/utils"
 	"log"
 	"os"
 	"path"
@@ -104,18 +104,6 @@ func (c *runApiHandles) generateModel(api *utils.ApiConfig) error {
 	modelPath := path.Join(utils.Workdir, "api", api.ModelName, "model.go")
 	var structModelName = utils.ToFirstUpper(api.ModelName)
 
-	packages := utils.GetGoFilePackages(modelPath)
-	for k := range utils.InternelModelPackages {
-		if _, ok := packages[k]; !ok {
-			packages[k] = 1
-		}
-	}
-
-	var _packages = make([]string, 0)
-	for k := range packages {
-		_packages = append(_packages, k)
-	}
-
 	// 2. 生成struct 定义
 	var ok bool
 	structString := utils.GetStructFromAPi(api)
@@ -145,7 +133,7 @@ func (c *runApiHandles) generateModel(api *utils.ApiConfig) error {
 		StructString:   structString,
 		ControllerName: api.ControllerName,
 		ModelName:      api.ModelName,
-		Packages:       _packages,
+		Packages:       api.ModelPackages,
 		Handles:        _handles,
 		StructName:     structModelName,
 	}
@@ -161,17 +149,6 @@ func (c *runApiHandles) generateController(api *utils.ApiConfig) error {
 	controllerPath := path.Join(utils.Workdir, "api", api.ModelName, "controller.go")
 
 	// 1. 获取包名
-	packages := utils.GetGoFilePackages(controllerPath)
-	for k := range utils.InternelControllerPackages {
-		if _, ok := packages[k]; !ok {
-			packages[k] = 1
-		}
-	}
-
-	var _packages = make([]string, 0)
-	for k := range packages {
-		_packages = append(_packages, k)
-	}
 
 	// return nil
 	// 处理路由处理函数
@@ -197,21 +174,10 @@ func (c *runApiHandles) generateController(api *utils.ApiConfig) error {
 			apiHandles[name] = rewrite
 		}
 	}
-
-	var _handles = make([]string, 0)
-	for _, v := range apiHandles {
-		_handles = append(_handles, v)
-	}
+	api.ControllerHandles = apiHandles
 
 	// 3. 生成文件了
-	param := utils.ControllerAndModelHandleTemplate{
-		ControllerName: api.ControllerName,
-		ModelName:      api.ModelName,
-		Packages:       _packages,
-		Handles:        _handles,
-	}
-
-	str3 := utils.GetControllerGoString(&param)
+	str3 := utils.GetControllerGoString(api)
 
 	// mkdir(path.Join(c.basecache, "api", api.ModelName))
 	c.writeStringToFile(path.Join(c.basecache, "api", api.ModelName, "controller.go"), str3)

@@ -1,0 +1,64 @@
+{
+    "kind":"collectionType",
+    "controllerName":"roleController",
+    "modelName":"role",
+    "modelCommnet":"角色",
+    "description":"This represents the role Model",
+    "attributes":[
+        {
+            "name":"name",
+            "type":"string",
+            "description":"角色名称"
+        },
+        {
+            "name":"description",
+            "type":"string",
+            "description":"描述"
+        }
+    ],
+    "routes":[
+        {
+            "method": "GET",
+            "path": "/user",
+            "handler": "RoleController.List",
+            "description":"查询角色列表",
+            "policies": []
+        },
+        {
+            "method": "GET",
+            "path": "/user/count",
+            "handler": "RoleController.Count",
+            "description":"查询角色数量",
+            "policies": []
+        },
+        {
+            "method": "GET",
+            "path": "/user/:id",
+            "handler": "RoleController.GetByID",
+            "description":"根据id查询角色",
+            "policies": []
+        },
+        {
+            "method": "POST",
+            "path": "/user",
+            "handler": "RoleController.Add",
+            "description":"新增角色",
+            "policies": []
+        },
+        {
+            "method": "PUT",
+            "path": "/user/:id",
+            "handler": "RoleController.Update",
+            "description":"更新角色",
+            "policies": []
+        },
+        {
+            "method": "DELETE",
+            "path": "/user/:id",
+            "handler": "RoleController.Delete",
+            "description":"删除角色",
+            "policies": []
+        }
+        
+    ]
+}

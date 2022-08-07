@@ -14,10 +14,10 @@ func (a *{{ .ControllerName }}) Count{{ .ModelName }}(c *gin.Context) interface{
 	b := {{ .ModelName }}{}
 	datas, err := b.Count(cond)
 	if err != nil {
-		return ERROR.WithMessage(err)
+		return goapi.ERROR.WithMessage(err)
 	}
 
-	return OK.WithData(datas)
+	return goapi.OK.WithData(datas)
 }
 
 `
@@ -30,10 +30,10 @@ func (a *{{ .ControllerName }}) List{{ .ModelName }}(c *gin.Context) interface{}
 	b := {{ .ModelName }}{}
 	datas, err := b.List(cond)
 	if err != nil {
-		return ERROR.WithMessage(err)
+		return goapi.ERROR.WithMessage(err)
 	}
 
-	return OK.WithData(datas)
+	return goapi.OK.WithData(datas)
 }
 
 	`
@@ -41,20 +41,20 @@ func (a *{{ .ControllerName }}) List{{ .ModelName }}(c *gin.Context) interface{}
 func (a *{{ .ControllerName }})  Get{{ .ModelName }}ByID(c *gin.Context) interface{} {
 	id := c.Param("id")
 	if id == "" {
-		return ERROR.WithCode(ErrParamNotFull).WithMessage("参数不完整")
+		return goapi.ERROR.WithCode(ErrParamNotFull).WithMessage("参数不完整")
 	}
 	intv, err := strconv.Atoi(id)
 	if err != nil {
-		return ERROR.WithMessage(err)
+		return goapi.ERROR.WithMessage(err)
 	}
 
 	b := {{ .ModelName }}{}
 	data, err := b.GetItemByID(intv)
 	if err != nil {
-		return ERROR.WithMessage(err)
+		return goapi.ERROR.WithMessage(err)
 	}
 
-	return OK.WithData(data)
+	return goapi.OK.WithData(data)
 }
 	
 	`
@@ -63,16 +63,16 @@ func (a *{{ .ControllerName }}) Add{{ .ModelName }}(c *gin.Context) interface{} 
 	var req = {{ .ModelName }}{}
 	err := c.ShouldBind(&req)
 	if err != nil {
-		return ERROR.WithMessage(err)
+		return goapi.ERROR.WithMessage(err)
 	}
 
 	b := {{ .ModelName }}{}
 	data, err := b.Add(&req)
 	if err != nil {
-		return ERROR.WithMessage(err)
+		return goapi.ERROR.WithMessage(err)
 	}
 
-	return OK.WithData(data)
+	return goapi.OK.WithData(data)
 }
 
 	`
@@ -80,27 +80,27 @@ func (a *{{ .ControllerName }}) Add{{ .ModelName }}(c *gin.Context) interface{} 
 func (a *{{ .ControllerName }}) Update{{ .ModelName }}(c *gin.Context) interface{} {
 	id := c.Param("id")
 	if id == "" {
-		return ERROR.WithCode(ErrParamNotFull).WithMessage("参数不完整")
+		return goapi.ERROR.WithCode(ErrParamNotFull).WithMessage("参数不完整")
 	}
 	intv, err := strconv.Atoi(id)
 	if err != nil {
-		return ERROR.WithMessage(err)
+		return goapi.ERROR.WithMessage(err)
 	}
 
 	var req = {{ .ModelName }}{}
 	err = c.ShouldBind(&req)
 	if err != nil {
-		return ERROR.WithMessage(err)
+		return goapi.ERROR.WithMessage(err)
 	}
 	req.ID = intv
 
 	t := {{ .ModelName }}{}
 	data, err := t.Update(&req)
 	if err != nil {
-		return ERROR.WithMessage(err)
+		return goapi.ERROR.WithMessage(err)
 	}
 
-	return OK.WithData(data)
+	return goapi.OK.WithData(data)
 }
 	
 	`
@@ -108,20 +108,20 @@ func (a *{{ .ControllerName }}) Update{{ .ModelName }}(c *gin.Context) interface
 func (a *{{ .ControllerName }}) Delete{{ .ModelName }}(c *gin.Context) interface{} {
 	id := c.Param("id")
 	if id == "" {
-		return ERROR.WithCode(ErrParamNotFull).WithData("参数不完整")
+		return goapi.ERROR.WithCode(ErrParamNotFull).WithData("参数不完整")
 	}
 	intv, err := strconv.Atoi(id)
 	if err != nil {
-		return ERROR.WithMessage(err)
+		return goapi.ERROR.WithMessage(err)
 	}
 
 	t := {{ .ModelName }}{}
 	err = t.Delete(intv)
 	if err != nil {
-		return ERROR.WithMessage(err)
+		return goapi.ERROR.WithMessage(err)
 	}
 
-	return OK
+	return goapi.OK
 }
 	
 	`
@@ -142,10 +142,19 @@ func (a *{{ .ControllerName }}) Delete{{ .ModelName }}(c *gin.Context) interface
 	`
 )
 
+var InternelControllerHandles = map[string]string{
+	"List":    List_Controller_Template,
+	"Count":   Count_Controller_Template,
+	"GetByID": GetByID_Controller_Template,
+	"Add":     Add_Controller_Template,
+	"Update":  Update_Controller_Template,
+	"Delete":  Delete_Controller_Template,
+}
+
 type ControllerAndModelHandleTemplate struct {
 	StructString   string
 	ControllerName string
-	Packages       []string
+	Packages       map[string]int
 	Handles        []string
 	ModelName      string
 	StructName     string
@@ -154,21 +163,9 @@ type ControllerAndModelHandleTemplate struct {
 func ParseControllerHandleTemplate(controllerName string, modelName string, apiname string) (string, error) {
 	var err error
 	var tpl *template.Template
-	// log.Println("apiname:::", apiname)
-	switch apiname {
-	case "List":
-		tpl, err = template.New(apiname).Parse(List_Controller_Template)
-	case "GetByID":
-		tpl, err = template.New(apiname).Parse(GetByID_Controller_Template)
-	case "Add":
-		tpl, err = template.New(apiname).Parse(Add_Controller_Template)
-	case "Update":
-		tpl, err = template.New(apiname).Parse(Update_Controller_Template)
-	case "Delete":
-		tpl, err = template.New(apiname).Parse(Delete_Controller_Template)
-	case "Count":
-		tpl, err = template.New(apiname).Parse(Delete_Controller_Template)
-	}
+
+	tplname := InternelControllerHandles[apiname]
+	tpl, err = template.New(apiname).Parse(tplname)
 	if err != nil {
 		return "", err
 	}
@@ -182,21 +179,21 @@ func ParseControllerHandleTemplate(controllerName string, modelName string, apin
 	return buf.String(), nil
 }
 
-func GetControllerGoString(param *ControllerAndModelHandleTemplate) string {
+func GetControllerGoString(param *ApiConfig) string {
 
 	buf := &bytes.Buffer{}
 	buf.WriteString(`package `)
 	buf.WriteString(param.ModelName)
 	buf.WriteString("\n")
 	buf.WriteString("\n")
+
+	// packages
 	buf.WriteString("import (\n")
-	for _, v := range param.Packages {
+	for k := range param.ControllerPackages {
 		buf.WriteString("\t")
-		buf.WriteString(v)
+		buf.WriteString(k)
 		buf.WriteString("\n")
 	}
-	// 必须要写入一个config
-	buf.WriteString("\t\"commonapi/config\"\n")
 
 	buf.WriteString("\n")
 	buf.WriteString(")\n")
@@ -206,12 +203,11 @@ func GetControllerGoString(param *ControllerAndModelHandleTemplate) string {
 	buf.WriteString("{}\n\n")
 	buf.WriteString("type ")
 	buf.WriteString(param.ControllerName)
-	buf.WriteString(" struct {\n")
-	buf.WriteString("}")
+	buf.WriteString(" struct {}\n")
 	buf.WriteString("\n")
 	buf.WriteString("\n")
 
-	for _, v := range param.Handles {
+	for _, v := range param.ControllerHandles {
 		buf.WriteString(v)
 		buf.WriteString("\n")
 	}

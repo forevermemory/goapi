@@ -6,11 +6,8 @@ import (
 	"strings"
 )
 
-var (
-	PACKAGE_CONFIG string = "\"commonapi/config\""
-)
-
 var InternelControllerPackages = map[string]int{
+	`"goapi"`:                    1,
 	`"strconv"`:                  1,
 	`"github.com/gin-gonic/gin"`: 1,
 }
@@ -19,7 +16,7 @@ var InternelModelPackages = map[string]int{
 	`"time"`:         1,
 	`"gorm.io/gorm"`: 1,
 	`"fmt"`:          1,
-	PACKAGE_CONFIG:   1,
+	`"goapi"`:        1,
 }
 
 // 程序工作目录

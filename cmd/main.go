@@ -1,6 +1,6 @@
 package main
 
-import "commonapi/service"
+import "goapi/service"
 
 func main() {
 	service.GenerateApiHandles()

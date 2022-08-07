@@ -1,13 +1,20 @@
 package utils
 
 type ApiConfig struct {
-	Kind           string          `json:"kind"`
-	ControllerName string          `json:"controllerName"`
-	ModelName      string          `json:"modelName"`
-	ModelCommnet   string          `json:"modelCommnet"`
-	Description    string          `json:"description"`
-	Attributes     []*ApiField     `json:"attributes"`
-	Routes         []*ApiRouteItem `json:"routes"`
+	Kind           string `json:"kind"`
+	ControllerName string `json:"controllerName"`
+
+	ModelName    string          `json:"modelName"`
+	StructName   string          `json:"structName"`
+	ModelCommnet string          `json:"modelCommnet"`
+	Description  string          `json:"description"`
+	Attributes   []*ApiField     `json:"attributes"`
+	Routes       []*ApiRouteItem `json:"routes"`
+
+	ControllerPackages map[string]int    `json:"controllerPackages"`
+	ControllerHandles  map[string]string `json:"controllerHandles"`
+	ModelPackages      map[string]int    `json:"modelPackages"`
+	ModelHandles       map[string]string `json:"modelHandles"`
 }
 
 type FieldType string
