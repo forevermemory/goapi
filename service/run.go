@@ -93,10 +93,18 @@ func (c *runApiHandles) run() {
 		// 生成model.go
 		c.generateModel(api)
 
-		// 生成 routes
 	}
+	// 生成 routes
 
 	// 生成api/router.go
+	routerGoString := utils.GenerateRouterString(apis)
+	c.writeStringToFile(path.Join(utils.Workdir, ".cache", "api", "router.go"), routerGoString)
+	c.writeStringToFile(path.Join(utils.Workdir, "api", "router.go"), routerGoString)
+
+	// 生成main.go
+	mainGoString := utils.GenerateMainGoString()
+	c.writeStringToFile(path.Join(utils.Workdir, ".cache", "main.go"), mainGoString)
+
 }
 
 func (c *runApiHandles) generateModel(api *utils.ApiConfig) error {
@@ -106,9 +114,9 @@ func (c *runApiHandles) generateModel(api *utils.ApiConfig) error {
 
 	// 2. 生成struct 定义
 	var ok bool
-	structString := utils.GetStructFromAPi(api)
+	structString, extraPackages := utils.GetStructFromAPi(api)
 
-	// 2.2 替换当前的model.go结构体
+	// 2.2 替换当前的model.go结构体 TODO
 	utils.ReplaceCurrentModelStruct(api, structString)
 
 	// 3. 获取结构体的函数 (生命周期和增删改查或者用户自定义)
@@ -119,7 +127,7 @@ func (c *runApiHandles) generateModel(api *utils.ApiConfig) error {
 	for k := range utils.InternelModelHandles {
 		if _, ok = rewriteModelHandles[k]; !ok {
 			// 模版替换
-			s2, _ := utils.ParseModelHandleTemplate(structModelName, k)
+			s2, _ := utils.ParseModelHandleTemplate(api.ModelName, k)
 			rewriteModelHandles[k] = s2
 		}
 	}
@@ -129,6 +137,9 @@ func (c *runApiHandles) generateModel(api *utils.ApiConfig) error {
 	}
 
 	// 4. 写入文件
+	for k := range extraPackages {
+		api.ModelPackages[k] = 1
+	}
 	param := utils.ControllerAndModelHandleTemplate{
 		StructString:   structString,
 		ControllerName: api.ControllerName,

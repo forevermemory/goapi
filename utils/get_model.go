@@ -59,7 +59,7 @@ func (*{{ .StructName }}) GetItemByID(id int, tx ...*gorm.DB) (*{{ .StructName }
 	if len(tx) > 0 {
 		db = tx[0]
 	}
-	var rec = User{}
+	var rec = {{ .StructName }}{}
 	db = db.Model(&{{ .StructName }}{})
 	db = db.Where("deleted_at is null")
 	err := db.Where("id = ?", id).First(&rec).Error
@@ -104,7 +104,7 @@ func (*{{ .StructName }}) Add(o *{{ .StructName }}, tx ...*gorm.DB) (*{{ .Struct
 		db = tx[0]
 	}
 	o.CreatedAt = time.Now()
-	o.UpdateAt = o.CreatedAt
+	o.UpdatedAt = o.CreatedAt
 	err := db.Create(o).Error
 	if err != nil {
 		return nil, err
@@ -141,7 +141,7 @@ func (*{{ .StructName }}) Delete(id int, tx ...*gorm.DB) error {
 }`
 
 	// 生命周期
-	TableName_Model_Template    string = `func (o *{{ .StructName }}) TableName() string {return "{{ .ModelName }}"}\n`
+	TableName_Model_Template    string = `func (o *{{ .StructName }}) TableName() string {return "{{ .ModelName }}"}`
 	BeforeCreate_Model_Template string = `func (o *{{ .StructName }}) BeforeCreate(tx *gorm.DB) error { return nil }`
 	AfterCreate_Model_Template  string = `func (o *{{ .StructName }}) AfterCreate(tx *gorm.DB) error { return nil }`
 	AfterSave_Model_Template    string = `func (o *{{ .StructName }}) AfterSave(tx *gorm.DB) error { return nil }`
@@ -211,7 +211,7 @@ func GetModelGoString(param *ControllerAndModelHandleTemplate) string {
 }
 
 // ParseModelHandleTemplate 替换model.go 里面结构体方法的模版变量
-func ParseModelHandleTemplate(structName string, apiname string) (string, error) {
+func ParseModelHandleTemplate(modelName string, apiname string) (string, error) {
 	var err error
 	var tpl *template.Template
 
@@ -223,7 +223,7 @@ func ParseModelHandleTemplate(structName string, apiname string) (string, error)
 	}
 
 	buf := &bytes.Buffer{}
-	err = tpl.Execute(buf, &ControllerAndModelHandleTemplate{StructName: structName})
+	err = tpl.Execute(buf, &ControllerAndModelHandleTemplate{StructName: ToGoUpper(modelName), ModelName: modelName})
 	if err != nil {
 		return "", err
 	}
@@ -257,7 +257,8 @@ func ReplaceCurrentModelStruct(api *ApiConfig, structString string) {
 }
 
 // GetStructFromAPi 根据传入的config.json 生成 type xxx struct{} 字符串
-func GetStructFromAPi(api *ApiConfig) string {
+func GetStructFromAPi(api *ApiConfig) (string, map[string]int) {
+	var extraPackages = map[string]int{}
 	buf := bytes.Buffer{}
 	buf.WriteString("type ")
 	buf.WriteString(ToGoUpper(api.ModelName))
@@ -283,6 +284,9 @@ func GetStructFromAPi(api *ApiConfig) string {
 			gotype = "string"
 		case Datetime_TYPE:
 			gotype = "time.Time"
+		case Reference_Belong_TYPE:
+			gotype = "int"
+			goto BELONG_TYPE
 
 		}
 
@@ -290,6 +294,20 @@ func GetStructFromAPi(api *ApiConfig) string {
 		buf.WriteString("\t")
 		buf.WriteString("`json:\"" + m.Name + "\" gorm:\"column:" + m.Name + "\"`")
 		buf.WriteString("\n")
+		continue
+
+	BELONG_TYPE:
+		buf.WriteString(gotype)
+		buf.WriteString("\t")
+		buf.WriteString("`json:\"" + m.Name + "\" gorm:\"column:" + m.Name + "\"`")
+		buf.WriteString("\n")
+		// Company      Company `gorm:"foreignKey:CompanyRefer"`
+
+		belongToModel := ToGoUpper(m.Model)
+		belong := "\t" + belongToModel + "\t" + m.Model + "." + belongToModel + "\t`gorm:\"foreignKey:" + ToGoUpper(m.Name) + "\"`"
+		buf.WriteString(belong)
+
+		extraPackages[`"goapi/api/`+m.Model+`"`] = 1
 
 	}
 
@@ -299,7 +317,7 @@ func GetStructFromAPi(api *ApiConfig) string {
 	buf.WriteString("\n")
 	buf.WriteString("\n")
 
-	return buf.String()
+	return buf.String(), extraPackages
 
 }
 

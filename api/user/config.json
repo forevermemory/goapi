@@ -30,6 +30,13 @@
             "type":"datetime",
             "description":"上次登录时间"
         }
+        ,
+        {
+            "name":"role_id",
+            "model":"role",
+            "type":"reference-belong",
+            "description":"角色id"
+        }
     ],
     "routes":[
         {

@@ -7,127 +7,127 @@ import (
 
 const (
 	Count_Controller_Template string = `
-func (a *{{ .ControllerName }}) Count{{ .ModelName }}(c *gin.Context) interface{} {
+func (a *{{ .ControllerName }}) Count(c *gin.Context) interface{} {
 	var querys = c.Request.URL.Query()
 	cond := config.ParseQuerys(querys)
 
-	b := {{ .ModelName }}{}
+	b := {{ .StructName }}{}
 	datas, err := b.Count(cond)
 	if err != nil {
-		return goapi.ERROR.WithMessage(err)
+		return config.ERROR.WithMessage(err.Error())
 	}
 
-	return goapi.OK.WithData(datas)
+	return config.OK.WithData(datas)
 }
 
 `
 
 	List_Controller_Template string = `
-func (a *{{ .ControllerName }}) List{{ .ModelName }}(c *gin.Context) interface{} {
+func (a *{{ .ControllerName }}) List(c *gin.Context) interface{} {
 	var querys = c.Request.URL.Query()
 	cond := config.ParseQuerys(querys)
 
-	b := {{ .ModelName }}{}
+	b := {{ .StructName }}{}
 	datas, err := b.List(cond)
 	if err != nil {
-		return goapi.ERROR.WithMessage(err)
+		return config.ERROR.WithMessage(err.Error())
 	}
 
-	return goapi.OK.WithData(datas)
+	return config.OK.WithData(datas)
 }
 
 	`
 	GetByID_Controller_Template string = `
-func (a *{{ .ControllerName }})  Get{{ .ModelName }}ByID(c *gin.Context) interface{} {
+func (a *{{ .ControllerName }})  GetByID(c *gin.Context) interface{} {
 	id := c.Param("id")
 	if id == "" {
-		return goapi.ERROR.WithCode(ErrParamNotFull).WithMessage("参数不完整")
+		return config.ERROR.WithCode(config.ErrParamNotFull).WithMessage("参数不完整")
 	}
 	intv, err := strconv.Atoi(id)
 	if err != nil {
-		return goapi.ERROR.WithMessage(err)
+		return config.ERROR.WithMessage(err.Error())
 	}
 
-	b := {{ .ModelName }}{}
+	b := {{ .StructName }}{}
 	data, err := b.GetItemByID(intv)
 	if err != nil {
-		return goapi.ERROR.WithMessage(err)
+		return config.ERROR.WithMessage(err.Error())
 	}
 
-	return goapi.OK.WithData(data)
+	return config.OK.WithData(data)
 }
 	
 	`
 	Add_Controller_Template string = `
-func (a *{{ .ControllerName }}) Add{{ .ModelName }}(c *gin.Context) interface{} {
-	var req = {{ .ModelName }}{}
+func (a *{{ .ControllerName }}) Add(c *gin.Context) interface{} {
+	var req = {{ .StructName }}{}
 	err := c.ShouldBind(&req)
 	if err != nil {
-		return goapi.ERROR.WithMessage(err)
+		return config.ERROR.WithMessage(err.Error())
 	}
 
-	b := {{ .ModelName }}{}
+	b := {{ .StructName }}{}
 	data, err := b.Add(&req)
 	if err != nil {
-		return goapi.ERROR.WithMessage(err)
+		return config.ERROR.WithMessage(err.Error())
 	}
 
-	return goapi.OK.WithData(data)
+	return config.OK.WithData(data)
 }
 
 	`
 	Update_Controller_Template string = `
-func (a *{{ .ControllerName }}) Update{{ .ModelName }}(c *gin.Context) interface{} {
+func (a *{{ .ControllerName }}) Update(c *gin.Context) interface{} {
 	id := c.Param("id")
 	if id == "" {
-		return goapi.ERROR.WithCode(ErrParamNotFull).WithMessage("参数不完整")
+		return config.ERROR.WithCode(config.ErrParamNotFull).WithMessage("参数不完整")
 	}
 	intv, err := strconv.Atoi(id)
 	if err != nil {
-		return goapi.ERROR.WithMessage(err)
+		return config.ERROR.WithMessage(err.Error())
 	}
 
-	var req = {{ .ModelName }}{}
+	var req = {{ .StructName }}{}
 	err = c.ShouldBind(&req)
 	if err != nil {
-		return goapi.ERROR.WithMessage(err)
+		return config.ERROR.WithMessage(err.Error())
 	}
 	req.ID = intv
 
-	t := {{ .ModelName }}{}
+	t := {{ .StructName }}{}
 	data, err := t.Update(&req)
 	if err != nil {
-		return goapi.ERROR.WithMessage(err)
+		return config.ERROR.WithMessage(err.Error())
 	}
 
-	return goapi.OK.WithData(data)
+	return config.OK.WithData(data)
 }
 	
 	`
 	Delete_Controller_Template string = `
-func (a *{{ .ControllerName }}) Delete{{ .ModelName }}(c *gin.Context) interface{} {
+func (a *{{ .ControllerName }}) Delete(c *gin.Context) interface{} {
 	id := c.Param("id")
 	if id == "" {
-		return goapi.ERROR.WithCode(ErrParamNotFull).WithData("参数不完整")
+		return config.ERROR.WithCode(config.ErrParamNotFull).WithData("参数不完整")
 	}
 	intv, err := strconv.Atoi(id)
 	if err != nil {
-		return goapi.ERROR.WithMessage(err)
+		return config.ERROR.WithMessage(err.Error())
 	}
 
-	t := {{ .ModelName }}{}
+	t := {{ .StructName }}{}
 	err = t.Delete(intv)
 	if err != nil {
-		return goapi.ERROR.WithMessage(err)
+		return config.ERROR.WithMessage(err.Error())
 	}
 
-	return goapi.OK
+	return config.OK
 }
 	
 	`
 
 	Controller_go_template string = `
-	package {{ .ModelName }}
+	package {{ .StructName }}
 
 	import (
 		{{ .Packages }}
@@ -171,7 +171,7 @@ func ParseControllerHandleTemplate(controllerName string, modelName string, apin
 	}
 
 	buf := &bytes.Buffer{}
-	err = tpl.Execute(buf, &ControllerAndModelHandleTemplate{ControllerName: controllerName, ModelName: modelName})
+	err = tpl.Execute(buf, &ControllerAndModelHandleTemplate{ControllerName: controllerName, ModelName: modelName, StructName: ToGoUpper(modelName)})
 	if err != nil {
 		return "", err
 	}

@@ -19,42 +19,42 @@
     "routes":[
         {
             "method": "GET",
-            "path": "/user",
+            "path": "/role",
             "handler": "RoleController.List",
             "description":"查询角色列表",
             "policies": []
         },
         {
             "method": "GET",
-            "path": "/user/count",
+            "path": "/role/count",
             "handler": "RoleController.Count",
             "description":"查询角色数量",
             "policies": []
         },
         {
             "method": "GET",
-            "path": "/user/:id",
+            "path": "/role/:id",
             "handler": "RoleController.GetByID",
             "description":"根据id查询角色",
             "policies": []
         },
         {
             "method": "POST",
-            "path": "/user",
+            "path": "/role",
             "handler": "RoleController.Add",
             "description":"新增角色",
             "policies": []
         },
         {
             "method": "PUT",
-            "path": "/user/:id",
+            "path": "/role/:id",
             "handler": "RoleController.Update",
             "description":"更新角色",
             "policies": []
         },
         {
             "method": "DELETE",
-            "path": "/user/:id",
+            "path": "/role/:id",
             "handler": "RoleController.Delete",
             "description":"删除角色",
             "policies": []

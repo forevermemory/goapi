@@ -25,10 +25,12 @@ const (
 	String_TYPE   FieldType = "string"   // string
 	Boolean_TYPE  FieldType = "boolean"  // int
 
-	// 关联关系 todo
+	// 关联关系
+	Reference_Belong_TYPE FieldType = "reference-belong" // 引用
 )
 
 type ApiField struct {
+	Model       string    `json:"model"`
 	Name        string    `json:"name"`
 	Type        FieldType `json:"type"`
 	Description string    `json:"description"`

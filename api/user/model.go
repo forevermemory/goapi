@@ -1,6 +1,7 @@
 package user
 
 import (
+	"goapi/api/role"
 	"time"
 )
 
@@ -12,11 +13,62 @@ type User struct {
 	Email	string	`json:"email" gorm:"column:email"`
 	Blocked	int	`json:"blocked" gorm:"column:blocked"`
 	LoginAt	time.Time	`json:"login_at" gorm:"column:login_at"`
-
+	RoleId	int	`json:"role_id" gorm:"column:role_id"`
+	Role	role.Role	`gorm:"foreignKey:RoleId"`
 	CreatedAt	time.Time	`json:"created_at" gorm:"column:created_at"`
 	UpdatedAt	time.Time	`json:"updated_at" gorm:"column:updated_at"`
 	DeletedAt	*time.Time	`json:"-" gorm:"column:deleted_at"`
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

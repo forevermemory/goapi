@@ -1,7 +1,10 @@
 package main
 
-import "goapi/service"
+import (
+	"goapi/service"
+)
 
 func main() {
 	service.GenerateApiHandles()
+	return
 }

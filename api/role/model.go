@@ -1,5 +1,7 @@
 package role
 
+import "time"
+
 type Role struct {
 	ID	int	`json:"id" gorm:"column:id;primary_key;auto_increment;"`
 
@@ -10,6 +12,58 @@ type Role struct {
 	UpdatedAt	time.Time	`json:"updated_at" gorm:"column:updated_at"`
 	DeletedAt	*time.Time	`json:"-" gorm:"column:deleted_at"`
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

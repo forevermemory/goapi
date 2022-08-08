@@ -1,4 +1,4 @@
-package commonapi
+package config
 
 import (
 	"fmt"
@@ -14,15 +14,22 @@ import (
 	"gorm.io/gorm"
 )
 
-var GlobalConfig *Config = func() *Config {
+func init() {
+
+	// init config
 	cfg, err := InitConfig("")
 	if err != nil {
 		log.Println("初始化配置文件失败:", err)
 	}
 	log.Println("初始化配置文件成功...")
+	GlobalConfig = cfg
 
-	return cfg
-}()
+	// 2.
+	ConnectToMysql()
+
+}
+
+var GlobalConfig *Config
 
 func InitConfig(f string) (*Config, error) {
 	if f == "" {
