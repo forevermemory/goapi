@@ -75,6 +75,10 @@ func WriteReadme(projectname string) error {
 	- go mod tidy
 	- go build main.go
 
+### add api
+	-   ./program -c add
+		-   program read config_model.json
+
 `
 
 	return writeStr2File(path.Join(".", projectname, "README.md"), content)
@@ -83,8 +87,43 @@ func WriteReadme(projectname string) error {
 func WriteGoMod(projectname, dbType string) error {
 	var content = ""
 	switch dbType {
+	case "sqlserver":
+		content += `module ` + projectname + `
+		
+go 1.16
+		
+require (
+	github.com/gin-gonic/gin v1.8.1
+	gopkg.in/yaml.v2 v2.4.0
+	gorm.io/driver/sqlserver v1.3.2
+	gorm.io/gorm v1.23.8
+)
+`
+	case "postgres":
+		content += `module ` + projectname + `
+		
+go 1.16
+		
+require (
+	github.com/gin-gonic/gin v1.8.1
+	gopkg.in/yaml.v2 v2.4.0
+	gorm.io/driver/postgres v1.3.9
+	gorm.io/gorm v1.23.8
+)
+`
+	case "sqlite":
+		content += `module ` + projectname + `
+		
+go 1.16
+		
+require (
+	github.com/gin-gonic/gin v1.8.1
+	gopkg.in/yaml.v2 v2.4.0
+	gorm.io/driver/sqlite v1.3.6
+	gorm.io/gorm v1.23.8
+)
+`
 	case "mysql":
-		// case "sqlite":
 		content += `module ` + projectname + `
 
 go 1.16
@@ -95,7 +134,7 @@ require (
 	gorm.io/driver/mysql v1.3.5
 	gorm.io/gorm v1.23.8
 )
-	`
+`
 
 	default:
 		content += `module ` + projectname + `
@@ -108,7 +147,7 @@ require (
 	gorm.io/driver/sqlite v1.3.6
 	gorm.io/gorm v1.23.8
 )
-	`
+`
 
 	}
 
@@ -118,6 +157,34 @@ require (
 func WriteConfigYaml(projectname string, dbType string) error {
 	var content string
 	switch dbType {
+	case "sqlserver":
+		content = `#### change config when need 
+sqlserver_config:
+    user: root
+    password: "123456"
+    host: localhost
+    port: 3306
+    database: taobao
+http_config:
+    port: 80`
+	case "postgres":
+		content = `#### change config when need 
+postgres_config:
+    user: root
+    password: "123456"
+    host: localhost
+    port: 3306
+    database: taobao
+    sslmode: disable
+    time_zone: Asia/Shanghai
+http_config:
+    port: 80`
+	case "sqlite":
+		content = `#### change config when need 
+sqlite3_config:
+	file_path: "api.db"
+http_config:
+	port: 80`
 	case "mysql":
 		content = `#### change config when need 
 mysql_config:
@@ -128,7 +195,6 @@ mysql_config:
     database: taobao
 http_config:
     port: 80`
-	// case "sqlite":
 	default:
 		content = `#### change config when need 
 sqlite3_config:

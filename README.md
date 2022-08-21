@@ -6,7 +6,7 @@ go build -o program main.go
 
 ### create program
 
--   ./program -c init -db [mysql/sqlite] -name project_name
+-   ./program -c init -db [mysql/sqlite/sqlserver/postgres] -name project_name
 
 ### add api
 

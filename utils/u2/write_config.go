@@ -91,11 +91,11 @@ func ConnectToMysql() {
 	}), &gorm.Config{})
 
 	if err != nil {
-		log.Println("连接mysql数据库失败:", err)
+		log.Println("connect mysql err:",err)
 		return
 	}
 
-	log.Println("连接mysql数据库成功...")
+	log.Println("connect mysql success...")
 	DATABASE = db
 
 }
@@ -177,11 +177,183 @@ func ConnectToSqlite() {
 
 	db, err := gorm.Open(sqlite.Open(GlobalConfig.Sqlite3Config.FilePath), &gorm.Config{})
 	if err != nil {
-		log.Println("连接sqlite数据库失败:", err)
+		log.Println("connect sqlite err:",err)
 		return
 	}
 
-	log.Println("连接sqlite数据库成功...")
+	log.Println("connect sqlite success...")
+	DATABASE = db
+}`
+	var cPostgreSQL = `package config
+
+import (
+	"io/ioutil"
+	"log"
+	"os"
+	"net/url"
+	"regexp"
+	"strconv"
+	"strings"
+
+	"gopkg.in/yaml.v2"
+	"gorm.io/driver/postgres"
+	"gorm.io/gorm"
+)
+
+func init() {
+
+	// init config
+	cfg, err := InitConfig("")
+	if err != nil {
+		log.Println("初始化配置文件失败:", err)
+		panic(err)
+	}
+	log.Println("初始化配置文件成功...")
+	GlobalConfig = cfg
+
+	// 2.
+	ConnectToPostgresSQL()
+
+}
+
+var GlobalConfig *Config
+
+func InitConfig(f string) (*Config, error) {
+	if f == "" {
+		f = "./config.yaml"
+	}
+	in, err := ioutil.ReadFile(f)
+	if err != nil {
+		return nil, err
+	}
+
+	c := new(Config)
+	err = yaml.Unmarshal(in, c)
+	if err != nil {
+		return nil, err
+	}
+
+	return c, nil
+}
+
+type Config struct {
+	HttpConfig    *HttpConfig    ` + "`yaml:\"http_config\"`" + `
+	PostGresConfig *PostGresConfig ` + "`yaml:\"postgres_config\"`" + `
+}
+
+type PostGresConfig struct {
+	User     string ` + "`yaml:\"user\"`" + `
+	Password string ` + "`yaml:\"password\"`" + `
+	Host     string ` + "`yaml:\"host\"`" + `
+	Port     int    ` + "`yaml:\"port\"`" + `
+	Database string ` + "`yaml:\"database\"`" + `
+	Sslmode string ` + "`yaml:\"sslmode\"`" + `
+	TimeZone string ` + "`yaml:\"time_zone\"`" + `
+}
+
+type HttpConfig struct {
+	Port int ` + "`yaml:\"port\"`" + `
+}
+
+var DATABASE *gorm.DB
+
+func ConnectToPostgresSQL() {
+
+	var cfg = GlobalConfig.MysqlConfig
+	dsn := fmt.Sprintf("host=%v user=%v password=%v dbname=%v port=%v sslmode=%v TimeZone=%v", cfg.Host, cfg.User, cfg.Password, cfg.Database, cfg.Port, cfg.Sslmode, cfg.TimeZone)
+
+	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
+	if err != nil {
+		log.Println("connect postgres err:", err)
+		return
+	}
+
+	log.Println("connect postgres success...")
+	DATABASE = db
+}`
+	var cSqlServer = `package config
+
+import (
+	"io/ioutil"
+	"log"
+	"os"
+	"net/url"
+	"regexp"
+	"strconv"
+	"strings"
+
+	"gopkg.in/yaml.v2"
+	"gorm.io/driver/sqlserver"
+	"gorm.io/gorm"
+)
+
+func init() {
+
+	// init config
+	cfg, err := InitConfig("")
+	if err != nil {
+		log.Println("初始化配置文件失败:", err)
+		panic(err)
+	}
+	log.Println("初始化配置文件成功...")
+	GlobalConfig = cfg
+
+	// 2.
+	ConnectToSqlServer()
+
+}
+
+var GlobalConfig *Config
+
+func InitConfig(f string) (*Config, error) {
+	if f == "" {
+		f = "./config.yaml"
+	}
+	in, err := ioutil.ReadFile(f)
+	if err != nil {
+		return nil, err
+	}
+
+	c := new(Config)
+	err = yaml.Unmarshal(in, c)
+	if err != nil {
+		return nil, err
+	}
+
+	return c, nil
+}
+
+type Config struct {
+	HttpConfig    *HttpConfig    ` + "`yaml:\"http_config\"`" + `
+	SqlServerConfig *SqlServerConfig ` + "`yaml:\"sqlserver_config\"`" + `
+}
+
+type SqlServerConfig struct {
+	User     string ` + "`yaml:\"user\"`" + `
+	Password string ` + "`yaml:\"password\"`" + `
+	Host     string ` + "`yaml:\"host\"`" + `
+	Port     int    ` + "`yaml:\"port\"`" + `
+	Database string ` + "`yaml:\"database\"`" + `
+}
+
+type HttpConfig struct {
+	Port int ` + "`yaml:\"port\"`" + `
+}
+
+var DATABASE *gorm.DB
+
+func ConnectToSqlServer() {
+
+	var cfg = GlobalConfig.MysqlConfig
+	dsn := fmt.Sprintf("sqlserver://%v:%v@%v:%v?database=%v", cfg.User, cfg.Password, cfg.Host, cfg.Port, cfg.Database)
+
+	db, err := gorm.Open(sqlserver.Open(dsn), &gorm.Config{})
+	if err != nil {
+		log.Println("connect sqlserver err:", err)
+		return
+	}
+
+	log.Println("connect sqlserver success...")
 	DATABASE = db
 }`
 
@@ -298,9 +470,14 @@ func (r *Response) WithCode(code int) *Response {
 `
 
 	switch dbType {
+	case "sqlserver":
+		content += cSqlServer
 	case "mysql":
-		// case "sqlite":
 		content += cMysql
+	case "sqlite":
+		content += cSqlite
+	case "postgres":
+		content += cPostgreSQL
 	default:
 		content += cSqlite
 	}
