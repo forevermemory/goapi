@@ -1,0 +1,20 @@
+{
+    "modelName":"user",
+    "attributes":[
+        {
+            "name":"username",
+            "type":"string",
+            "description":"描述"
+        },
+        {
+            "name":"blocked",
+            "type":"boolean",
+            "description":"是否锁定"
+        },
+        {
+            "name":"login_at",
+            "type":"datetime",
+            "description":"上次登录时间"
+        }
+    ]
+}

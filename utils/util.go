@@ -111,7 +111,6 @@ func GetStructFromString(s string, structName string) string {
 	var i = 1
 	var count = 1
 
-	// s2 := []rune(s)
 	for {
 		b := s[res[1]+i]
 		if b == '{' {

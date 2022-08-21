@@ -13,7 +13,7 @@ const (
 	
 func (*{{ .StructName }}) List(cond *config.Condition, tx ...*gorm.DB) ([]*{{ .StructName }}, error) {
 	var datas = make([]*{{ .StructName }}, 0)
-	db := config.MYSQL
+	db := config.DATABASE
 	if len(tx) > 0 {
 		db = tx[0]
 	}
@@ -23,15 +23,15 @@ func (*{{ .StructName }}) List(cond *config.Condition, tx ...*gorm.DB) ([]*{{ .S
 	for _, v := range cond.Wheres {
 		switch v.Method {
 		case config.GT:
-			db = db.Where(v.Field+" > ? ", v.Value)
+			db = db.Where(v.Field + " > ? ", v.Value)
 		case config.GTE:
-			db = db.Where(v.Field+" >= ? ", v.Value)
+			db = db.Where(v.Field + " >= ? ", v.Value)
 		case config.LT:
-			db = db.Where(v.Field+" < ? ", v.Value)
+			db = db.Where(v.Field + " < ? ", v.Value)
 		case config.LTE:
-			db = db.Where(v.Field+" <= ? ", v.Value)
+			db = db.Where(v.Field + " <= ? ", v.Value)
 		case config.EQ:
-			db = db.Where(v.Field+" = ? ", v.Value)
+			db = db.Where(v.Field + " = ? ", v.Value)
 		case config.CONTAINS:
 			db = db.Where(v.Field + " like '%" + v.Value + "%' ")
 		}
@@ -55,7 +55,7 @@ func (*{{ .StructName }}) List(cond *config.Condition, tx ...*gorm.DB) ([]*{{ .S
 	GetByID_Model_Template string = `
 	
 func (*{{ .StructName }}) GetItemByID(id int, tx ...*gorm.DB) (*{{ .StructName }}, error) {
-	db := config.MYSQL
+	db := config.DATABASE
 	if len(tx) > 0 {
 		db = tx[0]
 	}
@@ -68,7 +68,7 @@ func (*{{ .StructName }}) GetItemByID(id int, tx ...*gorm.DB) (*{{ .StructName }
 	Count_Model_Template string = `
 	
 func (*{{ .StructName }}) Count(cond *config.Condition, tx ...*gorm.DB) (int64, error) {
-	db := config.MYSQL
+	db := config.DATABASE
 	if len(tx) > 0 {
 		db = tx[0]
 	}
@@ -78,15 +78,15 @@ func (*{{ .StructName }}) Count(cond *config.Condition, tx ...*gorm.DB) (int64, 
 	for _, v := range cond.Wheres {
 		switch v.Method {
 		case config.GT:
-			db = db.Where(v.Field+" > ? ", v.Value)
+			db = db.Where(v.Field + " > ? ", v.Value)
 		case config.GTE:
-			db = db.Where(v.Field+" >= ? ", v.Value)
+			db = db.Where(v.Field + " >= ? ", v.Value)
 		case config.LT:
-			db = db.Where(v.Field+" < ? ", v.Value)
+			db = db.Where(v.Field + " < ? ", v.Value)
 		case config.LTE:
-			db = db.Where(v.Field+" <= ? ", v.Value)
+			db = db.Where(v.Field + " <= ? ", v.Value)
 		case config.EQ:
-			db = db.Where(v.Field+" = ? ", v.Value)
+			db = db.Where(v.Field + " = ? ", v.Value)
 		case config.CONTAINS:
 			db = db.Where(v.Field + " like '%" + v.Value + "%' ")
 		}
@@ -99,7 +99,7 @@ func (*{{ .StructName }}) Count(cond *config.Condition, tx ...*gorm.DB) (int64, 
 }`
 	Add_Model_Template string = `
 func (*{{ .StructName }}) Add(o *{{ .StructName }}, tx ...*gorm.DB) (*{{ .StructName }}, error) {
-	db := config.MYSQL
+	db := config.DATABASE
 	if len(tx) > 0 {
 		db = tx[0]
 	}
@@ -114,7 +114,7 @@ func (*{{ .StructName }}) Add(o *{{ .StructName }}, tx ...*gorm.DB) (*{{ .Struct
 	Update_Model_Template string = `
 	
 func (*{{ .StructName }}) Update(o *{{ .StructName }}, tx ...*gorm.DB) (*{{ .StructName }}, error) {
-	db := config.MYSQL
+	db := config.DATABASE
 	if len(tx) > 0 {
 		db = tx[0]
 	}
@@ -127,7 +127,7 @@ func (*{{ .StructName }}) Update(o *{{ .StructName }}, tx ...*gorm.DB) (*{{ .Str
 }`
 	Delete_Model_Template string = `
 func (*{{ .StructName }}) Delete(id int, tx ...*gorm.DB) error {
-	db := config.MYSQL
+	db := config.DATABASE
 	if len(tx) > 0 {
 		db = tx[0]
 	}
@@ -308,6 +308,71 @@ func GetStructFromAPi(api *ApiConfig) (string, map[string]int) {
 		buf.WriteString(belong)
 
 		extraPackages[`"goapi/api/`+m.Model+`"`] = 1
+
+	}
+
+	buf.WriteString(addTimeField())
+
+	buf.WriteString("}")
+	buf.WriteString("\n")
+	buf.WriteString("\n")
+
+	return buf.String(), extraPackages
+
+}
+
+// GetStructFromCreateNewApi 根据传入的config.json 生成 type xxx struct{} 字符串
+func GetStructFromCreateNewApi(structName string, gomodName string, attributes []*ApiField) (string, map[string]int) {
+	var extraPackages = map[string]int{}
+	buf := bytes.Buffer{}
+	buf.WriteString("type ")
+	buf.WriteString(structName)
+	buf.WriteString(" struct {")
+	buf.WriteString("\n")
+
+	buf.WriteString("\tID\tint\t`json:\"id\" gorm:\"column:id;primary_key;auto_increment;\"`")
+	buf.WriteString("\n")
+	buf.WriteString("\n")
+
+	var gotype string
+	for _, m := range attributes {
+		buf.WriteString("\t")
+		buf.WriteString(ToGoUpper(m.Name))
+		buf.WriteString("\t")
+
+		switch m.Type {
+		case Boolean_TYPE:
+			gotype = "int"
+		case Number_TYPE:
+			gotype = "int"
+		case String_TYPE:
+			gotype = "string"
+		case Datetime_TYPE:
+			gotype = "time.Time"
+		case Reference_Belong_TYPE:
+			gotype = "int"
+			goto BELONG_TYPE
+
+		}
+
+		buf.WriteString(gotype)
+		buf.WriteString("\t")
+		buf.WriteString("`json:\"" + m.Name + "\" gorm:\"column:" + m.Name + "\"`")
+		buf.WriteString("\n")
+		continue
+
+	BELONG_TYPE:
+		buf.WriteString(gotype)
+		buf.WriteString("\t")
+		buf.WriteString("`json:\"" + m.Name + "\" gorm:\"column:" + m.Name + "\"`")
+		buf.WriteString("\n")
+		// Company      Company `gorm:"foreignKey:CompanyRefer"`
+
+		belongToModel := ToGoUpper(m.Model)
+		belong := "\t" + belongToModel + "\t" + m.Model + "." + belongToModel + "\t`gorm:\"foreignKey:" + ToGoUpper(m.Name) + "\"`"
+		buf.WriteString(belong)
+
+		extraPackages[`"`+gomodName+`/api/`+m.Model+`"`] = 1
 
 	}
 
