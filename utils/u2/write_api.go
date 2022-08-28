@@ -254,10 +254,7 @@ type Role struct {
 	DeletedAt	*time.Time	` + "`json:\"-\" gorm:\"column:deleted_at\"`" + `
 }
 
-func (o *Role) BeforeUpdate(tx *gorm.DB) error { return nil }
 
-
-	
 func (*Role) GetItemByID(id int, tx ...*gorm.DB) (*Role, error) {
 	db := config.DATABASE
 	if len(tx) > 0 {
@@ -269,13 +266,6 @@ func (*Role) GetItemByID(id int, tx ...*gorm.DB) (*Role, error) {
 	err := db.Where("id = ?", id).First(&rec).Error
 	return &rec, err
 }
-
-func (o *Role) AfterCreate(tx *gorm.DB) error { return nil }
-
-func (o *Role) AfterDelete(tx *gorm.DB) error { return nil }
-
-func (o *Role) TableName() string {return "role"}
-
 
 func (*Role) Add(o *Role, tx ...*gorm.DB) (*Role, error) {
 	db := config.DATABASE
@@ -291,7 +281,6 @@ func (*Role) Add(o *Role, tx ...*gorm.DB) (*Role, error) {
 	return o, nil
 }
 
-
 func (*Role) Delete(id int, tx ...*gorm.DB) error {
 	db := config.DATABASE
 	if len(tx) > 0 {
@@ -306,10 +295,6 @@ func (*Role) Delete(id int, tx ...*gorm.DB) error {
 	return nil
 }
 
-func (o *Role) BeforeDelete(tx *gorm.DB) error { return nil }
-
-
-	
 func (*Role) Count(cond *config.Condition, tx ...*gorm.DB) (int64, error) {
 	db := config.DATABASE
 	if len(tx) > 0 {
@@ -341,12 +326,6 @@ func (*Role) Count(cond *config.Condition, tx ...*gorm.DB) (int64, error) {
 	return 0, nil
 }
 
-func (o *Role) BeforeCreate(tx *gorm.DB) error { return nil }
-
-func (o *Role) AfterUpdate(tx *gorm.DB) error { return nil }
-
-
-	
 func (*Role) Update(o *Role, tx ...*gorm.DB) (*Role, error) {
 	db := config.DATABASE
 	if len(tx) > 0 {
@@ -360,12 +339,6 @@ func (*Role) Update(o *Role, tx ...*gorm.DB) (*Role, error) {
 	return o, nil
 }
 
-func (o *Role) AfterSave(tx *gorm.DB) error { return nil }
-
-func (o *Role) AfterFind(tx *gorm.DB) error   { return nil }
-
-
-	
 func (*Role) List(cond *config.Condition, tx ...*gorm.DB) ([]*Role, error) {
 	var datas = make([]*Role, 0)
 	db := config.DATABASE
@@ -408,6 +381,23 @@ func (*Role) List(cond *config.Condition, tx ...*gorm.DB) ([]*Role, error) {
 	return datas, nil
 }
 
+func (o *Role) TableName() string { return "role" }
+
+func (o *Role) BeforeUpdate(tx *gorm.DB) error { return nil }
+
+func (o *Role) AfterCreate(tx *gorm.DB) error { return nil }
+
+func (o *Role) AfterDelete(tx *gorm.DB) error { return nil }
+
+func (o *Role) BeforeDelete(tx *gorm.DB) error { return nil }
+
+func (o *Role) BeforeCreate(tx *gorm.DB) error { return nil }
+
+func (o *Role) AfterUpdate(tx *gorm.DB) error { return nil }
+
+func (o *Role) AfterSave(tx *gorm.DB) error { return nil }
+
+func (o *Role) AfterFind(tx *gorm.DB) error { return nil }
 
 `
 
@@ -441,6 +431,32 @@ type User struct {
 	DeletedAt	*time.Time	` + "`json:\"-\" gorm:\"column:deleted_at\"`" + `
 }
 
+func (*User) Add(o *User, tx ...*gorm.DB) (*User, error) {
+	db := config.DATABASE
+	if len(tx) > 0 {
+		db = tx[0]
+	}
+	o.CreatedAt = time.Now()
+	o.UpdatedAt = o.CreatedAt
+	err := db.Create(o).Error
+	if err != nil {
+		return nil, err
+	}
+	return o, nil
+}
+
+func (*User) Update(o *User, tx ...*gorm.DB) (*User, error) {
+	db := config.DATABASE
+	if len(tx) > 0 {
+		db = tx[0]
+	}
+	err := db.Model(&User{}).Where("id = ?", o.ID).Updates(o).Error
+	// err := db.Model(&User{}).Where("id = ?", o.ID).Save(o).Error
+	if err != nil {
+		return nil, err
+	}
+	return o, nil
+}
 
 func (*User) Delete(id int, tx ...*gorm.DB) error {
 	db := config.DATABASE
@@ -456,12 +472,18 @@ func (*User) Delete(id int, tx ...*gorm.DB) error {
 	return nil
 }
 
-func (o *User) BeforeCreate(tx *gorm.DB) error { return nil }
+func (*User) GetItemByID(id int, tx ...*gorm.DB) (*User, error) {
+	db := config.DATABASE
+	if len(tx) > 0 {
+		db = tx[0]
+	}
+	var rec = User{}
+	db = db.Model(&User{})
+	db = db.Where("deleted_at is null")
+	err := db.Where("id = ?", id).First(&rec).Error
+	return &rec, err
+}
 
-func (o *User) AfterDelete(tx *gorm.DB) error { return nil }
-
-
-	
 func (*User) List(cond *config.Condition, tx ...*gorm.DB) ([]*User, error) {
 	var datas = make([]*User, 0)
 	db := config.DATABASE
@@ -504,49 +526,6 @@ func (*User) List(cond *config.Condition, tx ...*gorm.DB) ([]*User, error) {
 	return datas, nil
 }
 
-
-func (*User) Add(o *User, tx ...*gorm.DB) (*User, error) {
-	db := config.DATABASE
-	if len(tx) > 0 {
-		db = tx[0]
-	}
-	o.CreatedAt = time.Now()
-	o.UpdatedAt = o.CreatedAt
-	err := db.Create(o).Error
-	if err != nil {
-		return nil, err
-	}
-	return o, nil
-}
-
-func (o *User) AfterFind(tx *gorm.DB) error   { return nil }
-
-
-	
-func (*User) GetItemByID(id int, tx ...*gorm.DB) (*User, error) {
-	db := config.DATABASE
-	if len(tx) > 0 {
-		db = tx[0]
-	}
-	var rec = User{}
-	db = db.Model(&User{})
-	db = db.Where("deleted_at is null")
-	err := db.Where("id = ?", id).First(&rec).Error
-	return &rec, err
-}
-
-func (o *User) AfterCreate(tx *gorm.DB) error { return nil }
-
-func (o *User) TableName() string {return "user"}
-
-func (o *User) AfterUpdate(tx *gorm.DB) error { return nil }
-
-func (o *User) BeforeDelete(tx *gorm.DB) error { return nil }
-
-func (o *User) BeforeUpdate(tx *gorm.DB) error { return nil }
-
-
-	
 func (*User) Count(cond *config.Condition, tx ...*gorm.DB) (int64, error) {
 	db := config.DATABASE
 	if len(tx) > 0 {
@@ -578,24 +557,23 @@ func (*User) Count(cond *config.Condition, tx ...*gorm.DB) (int64, error) {
 	return 0, nil
 }
 
+func (o *User) TableName() string {return "user"}
+
+func (o *User) BeforeCreate(tx *gorm.DB) error { return nil }
+
+func (o *User) AfterDelete(tx *gorm.DB) error { return nil }
+
+func (o *User) AfterFind(tx *gorm.DB) error   { return nil }
+
+func (o *User) AfterCreate(tx *gorm.DB) error { return nil }
+
+func (o *User) AfterUpdate(tx *gorm.DB) error { return nil }
+
+func (o *User) BeforeDelete(tx *gorm.DB) error { return nil }
+
+func (o *User) BeforeUpdate(tx *gorm.DB) error { return nil }
+
 func (o *User) AfterSave(tx *gorm.DB) error { return nil }
-
-
-	
-func (*User) Update(o *User, tx ...*gorm.DB) (*User, error) {
-	db := config.DATABASE
-	if len(tx) > 0 {
-		db = tx[0]
-	}
-	err := db.Model(&User{}).Where("id = ?", o.ID).Updates(o).Error
-	// err := db.Model(&User{}).Where("id = ?", o.ID).Save(o).Error
-	if err != nil {
-		return nil, err
-	}
-	return o, nil
-}
-	
-	
 	
 `
 	return writeStr2File(path.Join(".", projectname, "api", "user", "model.go"), content)
